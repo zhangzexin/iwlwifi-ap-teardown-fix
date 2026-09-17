@@ -1,0 +1,15 @@
+Upstream source attribution
+===========================
+
+The modified upstream files carry SPDX-License-Identifier:
+GPL-2.0 OR BSD-3-Clause. This distribution selects GPL-2.0-only;
+see LICENSE. Existing upstream notices remain applicable.
+
+drivers/net/wireless/intel/iwlwifi/mvm/mld-key.c
+Copyright (C) 2022 - 2024 Intel Corporation
+
+drivers/net/wireless/intel/iwlwifi/mvm/mld-mac80211.c
+Copyright (C) 2022-2025 Intel Corporation
+
+Local modifications are identified in patches/0001.patch and dated in its header.
+Intel names identify tested hardware/software only; no endorsement is claimed.

@@ -1,0 +1,7 @@
+*.ko
+*.ucode
+*.bin
+*.log
+.env*
+.DS_Store
+__pycache__/

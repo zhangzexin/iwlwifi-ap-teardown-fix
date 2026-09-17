@@ -1,0 +1,68 @@
+Subject: [PATCH] iwlwifi: mvm: remove AP group keys before internal stations
+
+Based on backports 6.12.96. Modified 2026-09-18.
+Reuses the existing group-key cleanup iterator before AP station teardown.
+Locally validated on one custom kernel/firmware combination. Not submitted
+upstream or represented as an Intel-approved fix. See docs/TESTING.md.
+Source-only publication; no kernel module or firmware binary is included.
+
+--- a/drivers/net/wireless/intel/iwlwifi/mvm/mld-key.c
++++ b/drivers/net/wireless/intel/iwlwifi/mvm/mld-key.c
+@@ -383,7 +383,10 @@
+ 	if (key->link_id >= 0 && key->link_id != link_id)
+ 		return;
+ 
+-	_iwl_mvm_sec_key_del(mvm, vif, NULL, key, CMD_ASYNC);
++	if (_iwl_mvm_sec_key_del(mvm, vif, NULL, key, CMD_ASYNC)) {
++		IWL_ERR(mvm, "Failed to queue group key removal before station teardown\n");
++		return;
++	}
+ 	key->hw_key_idx = STA_KEY_IDX_INVALID;
+ }
+ 
+@@ -395,9 +398,20 @@
+ 	u32 sec_key_id = WIDE_ID(DATA_PATH_GROUP, SEC_KEY_CMD);
+ 	u8 sec_key_ver = iwl_fw_lookup_cmd_ver(mvm->fw, sec_key_id, 0);
+ 
+-	if (WARN_ON_ONCE(vif->type != NL80211_IFTYPE_STATION ||
+-			 link->ap_sta_id == IWL_MVM_INVALID_STA))
+-		return;
++	if (WARN_ON_ONCE(!link))
++		return;
++
++	if (vif->type == NL80211_IFTYPE_STATION) {
++		if (WARN_ON_ONCE(link->ap_sta_id == IWL_MVM_INVALID_STA))
++			return;
++	} else if (vif->type == NL80211_IFTYPE_AP) {
++		if (WARN_ON_ONCE(link->mcast_sta.sta_id == IWL_MVM_INVALID_STA ||
++				 link->bcast_sta.sta_id == IWL_MVM_INVALID_STA))
++			return;
++	} else {
++		WARN_ON_ONCE(1);
++		return;
++	}
+ 
+ 	if (!sec_key_ver)
+ 		return;
+--- a/drivers/net/wireless/intel/iwlwifi/mvm/mld-mac80211.c
++++ b/drivers/net/wireless/intel/iwlwifi/mvm/mld-mac80211.c
+@@ -713,6 +713,19 @@
+ 		iwl_mvm_mld_mac_ctxt_changed(mvm, mvm->p2p_device_vif, false);
+ 
+ 	iwl_mvm_ftm_responder_clear(mvm, vif);
++
++	/*
++	 * Non-MLO GTKs (link_id == -1) can outlive mac80211's link
++	 * cleanup. Remove their firmware references before the internal
++	 * multicast/broadcast stations, as for client-mode AP removal.
++	 */
++	if (vif->type == NL80211_IFTYPE_AP) {
++		struct iwl_mvm_vif *mvmvif = iwl_mvm_vif_from_mac80211(vif);
++
++		iwl_mvm_sec_key_remove_ap(mvm, vif,
++					  mvmvif->link[link_conf->link_id],
++					  link_conf->link_id);
++	}
+ 
+ 	iwl_mvm_mld_rm_bcast_sta(mvm, vif, link_conf);
+ 	iwl_mvm_mld_rm_mcast_sta(mvm, vif, link_conf);

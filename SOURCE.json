@@ -1,0 +1,26 @@
+{
+  "base": "backports-6.12.96",
+  "source_archive": "https://sources.openwrt.org/backports-6.12.96.tar.zst",
+  "source_archive_sha256": "816882e80cd6eb7f10d2851f634ca7964eb47a62f64eff4bf6f92ffdf8593650",
+  "patch": "patches/0001.patch",
+  "patch_sha256": "eac29d876a4e10cd8408db636df9441811bed0658eb1d84e70fe48a08b059a57",
+  "files": {
+    "drivers/net/wireless/intel/iwlwifi/mvm/mld-key.c": {
+      "baseline_sha256": "302d881996b912e1fec462ad4cb7f53417d430af6e79d14e655201d50216a39b",
+      "patched_sha256": "650bc2f1dcd413e5e0afa7be8d5babdbcf432810cfc140ff22c34eefada6e756"
+    },
+    "drivers/net/wireless/intel/iwlwifi/mvm/mld-mac80211.c": {
+      "baseline_sha256": "7a9867772f12337fe320d1deaeb922518fc16a62b9663be8dd97508e1a016df4",
+      "patched_sha256": "b803e44b4dc6a9dc5b7c68fe12d7b817310684fd6fd6d96dfef4f06f45741772"
+    }
+  },
+  "tested_environment": {
+    "kernel": "custom 6.6.144",
+    "backports": "6.12.96",
+    "pci": "8086:7e40",
+    "subsystem": "8086:40b0",
+    "firmware": "89.d2579d43.0 ma-b0-gf4-a0-89.ucode",
+    "firmware_sha256": "7e0df7b4ffe7188e22dd51a3b41012544bff6f97e0cef54bde35e79b346a88f8"
+  },
+  "source_release": "https://github.com/openwrt/backports/releases/tag/backports-v6.12.96"
+}
